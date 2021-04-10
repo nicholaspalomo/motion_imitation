@@ -19,12 +19,18 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+import os
+import inspect
+currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
+parentdir = os.path.dirname(os.path.dirname(currentdir))
+os.sys.path.insert(0, parentdir)
+
 import gym
 from gym import spaces
 import numpy as np
 import typing
 
-from envs.sensors import sensor
+from motion_imitation.envs.sensors import sensor
 
 
 class UnsupportedConversionError(Exception):
@@ -88,8 +94,9 @@ def convert_1d_box_sensors_to_gym_space(
 
   lower_bound = np.concatenate([s.get_lower_bound() for s in sensors])
   upper_bound = np.concatenate([s.get_upper_bound() for s in sensors])
-  observation_space = spaces.Box(
-      np.array(lower_bound), np.array(upper_bound), dtype=np.float32)
+  observation_space = spaces.Box(np.array(lower_bound),
+                                 np.array(upper_bound),
+                                 dtype=np.float32)
   return observation_space
 
 
@@ -110,10 +117,9 @@ def convert_sensors_to_gym_space_dictionary(
   gym_space_dict = {}
   for s in sensors:
     if isinstance(s, sensor.BoxSpaceSensor):
-      gym_space_dict[s.get_name()] = spaces.Box(
-          np.array(s.get_lower_bound()),
-          np.array(s.get_upper_bound()),
-          dtype=np.float32)
+      gym_space_dict[s.get_name()] = spaces.Box(np.array(s.get_lower_bound()),
+                                                np.array(s.get_upper_bound()),
+                                                dtype=np.float32)
     else:
       raise UnsupportedConversionError('sensors = ' + str(sensors))
   return spaces.Dict(gym_space_dict)

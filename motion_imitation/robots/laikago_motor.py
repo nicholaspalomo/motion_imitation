@@ -14,11 +14,16 @@
 # limitations under the License.
 
 """Motor model for laikago."""
+import os
+import inspect
+currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
+parentdir = os.path.dirname(os.path.dirname(currentdir))
+os.sys.path.insert(0, parentdir)
 
 import collections
 import numpy as np
 
-from robots import robot_config
+from motion_imitation.robots import robot_config
 
 NUM_MOTORS = 12
 
@@ -100,7 +105,7 @@ class LaikagoMotorModel(object):
                         motor_angle,
                         motor_velocity,
                         true_motor_velocity,
-                        motor_control_mode=None):
+                        motor_control_mode):
     """Convert the commands (position control or torque control) to torque.
 
     Args:
@@ -154,6 +159,9 @@ class LaikagoMotorModel(object):
       desired_motor_velocities = motor_commands[
           VELOCITY_INDEX::MOTOR_COMMAND_DIMENSION]
       additional_torques = motor_commands[TORQUE_INDEX::MOTOR_COMMAND_DIMENSION]
+    else:
+      print("Undefined motor_control_mode=",motor_control_mode)
+      exit()
     motor_torques = -1 * (kp * (motor_angle - desired_motor_angles)) - kd * (
         motor_velocity - desired_motor_velocities) + additional_torques
     motor_torques = self._strength_ratios * motor_torques

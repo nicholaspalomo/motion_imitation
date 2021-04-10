@@ -15,9 +15,14 @@
 
 """This file implements an accurate motor model."""
 
+import os
+import inspect
+currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
+parentdir = os.path.dirname(os.path.dirname(currentdir))
+os.sys.path.insert(0, parentdir)
 import numpy as np
 
-from robots import robot_config
+from motion_imitation.robots import robot_config
 
 VOLTAGE_CLIPPING = 50
 OBSERVED_TORQUE_LIMIT = 5.7
@@ -25,8 +30,8 @@ MOTOR_VOLTAGE = 16.0
 MOTOR_RESISTANCE = 0.186
 MOTOR_TORQUE_CONSTANT = 0.0954
 MOTOR_VISCOUS_DAMPING = 0
-MOTOR_SPEED_LIMIT = MOTOR_VOLTAGE / (
-    MOTOR_VISCOUS_DAMPING + MOTOR_TORQUE_CONSTANT)
+MOTOR_SPEED_LIMIT = MOTOR_VOLTAGE / (MOTOR_VISCOUS_DAMPING +
+                                     MOTOR_TORQUE_CONSTANT)
 NUM_MOTORS = 8
 MOTOR_POS_LB = 0.5
 MOTOR_POS_UB = 2.5
@@ -44,7 +49,6 @@ class MotorModel(object):
   The internal motor model takes the following factors into consideration:
   pd gains, viscous friction, back-EMF voltage and current-torque profile.
   """
-
   def __init__(self,
                kp=1.2,
                kd=0,
@@ -125,8 +129,8 @@ class MotorModel(object):
 
     if (motor_control_mode is robot_config.MotorControlMode.TORQUE) or (
         motor_control_mode is robot_config.MotorControlMode.HYBRID):
-      raise ValueError(
-          "{} is not a supported motor control mode".format(motor_control_mode))
+      raise ValueError("{} is not a supported motor control mode".format(
+          motor_control_mode))
 
     kp = self._kp
     kd = self._kd
@@ -138,8 +142,10 @@ class MotorModel(object):
       # signal, the corresponding joint violates the joint constraint, so
       # we should add the PD output to motor_command to bring it back to the
       # safe region.
-      pd_max = -1 * kp * (motor_angle - MOTOR_POS_UB) - kd / 2. * motor_velocity
-      pd_min = -1 * kp * (motor_angle - MOTOR_POS_LB) - kd / 2. * motor_velocity
+      pd_max = -1 * kp * (motor_angle -
+                          MOTOR_POS_UB) - kd / 2. * motor_velocity
+      pd_min = -1 * kp * (motor_angle -
+                          MOTOR_POS_LB) - kd / 2. * motor_velocity
       pwm = motor_commands + np.minimum(pd_max, 0) + np.maximum(pd_min, 0)
     else:
       pwm = -1 * kp * (motor_angle - motor_commands) - kd * motor_velocity

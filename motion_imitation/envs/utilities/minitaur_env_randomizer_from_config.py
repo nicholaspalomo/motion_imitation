@@ -20,20 +20,25 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+import os
+import inspect
+currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
+parentdir = os.path.dirname(os.path.dirname(currentdir))
+os.sys.path.insert(0, parentdir)
+
 import functools
 import random
 import numpy as np
 import six
 import tensorflow.compat.v1 as tf
-from envs.utilities import env_randomizer_base
-from envs.utilities import minitaur_env_randomizer_config
+from motion_imitation.envs.utilities import env_randomizer_base
+from motion_imitation.envs.utilities import minitaur_env_randomizer_config
 
 SIMULATION_TIME_STEP = 0.001
 
 
 class MinitaurEnvRandomizerFromConfig(env_randomizer_base.EnvRandomizerBase):
   """A randomizer that change the minitaur_gym_env during every reset."""
-
   def __init__(self, config=None):
     if config is None:
       config = "all_params"

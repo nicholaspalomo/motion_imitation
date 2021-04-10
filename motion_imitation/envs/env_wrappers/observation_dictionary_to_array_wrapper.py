@@ -12,21 +12,13 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """An env wrapper that flattens the observation dictionary to an array."""
-
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import gym
-
-from envs.utilities import env_utils
+from motion_imitation.envs.utilities import env_utils
 
 
 class ObservationDictionaryToArrayWrapper(gym.Env):
   """An env wrapper that flattens the observation dictionary to an array."""
-
   def __init__(self, gym_env, observation_excluded=()):
     """Initializes the wrapper."""
     self.observation_excluded = observation_excluded

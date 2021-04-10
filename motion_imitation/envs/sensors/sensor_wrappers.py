@@ -19,23 +19,25 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+import os
+import inspect
+currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
+parentdir = os.path.dirname(os.path.dirname(currentdir))
+os.sys.path.insert(0, parentdir)
+
 import collections
 
 import numpy as np
 import typing
 
-from envs.sensors import sensor
+from motion_imitation.envs.sensors import sensor
 
-
-_ARRAY = typing.Iterable[float]
+_ARRAY = typing.Iterable[float] # pylint: disable=invalid-name
 
 
 class SensorWrapper(sensor.BoxSpaceSensor):
   """A base interface for sensor wrappers."""
-
-  def __init__(self,
-               wrapped_sensor: sensor.BoxSpaceSensor,
-               **kwargs) -> None:
+  def __init__(self, wrapped_sensor: sensor.BoxSpaceSensor, **kwargs) -> None:
     """A base wrapper interface.
 
     Args:
@@ -83,9 +85,9 @@ class SensorWrapper(sensor.BoxSpaceSensor):
     """
     self._wrapped_sensor.on_terminate(env)
 
+
 class HistoricSensorWrapper(SensorWrapper):
   """A sensor wrapper for maintaining the history of the sensor."""
-
   def __init__(self,
                wrapped_sensor: sensor.BoxSpaceSensor,
                num_history: int,
@@ -117,8 +119,10 @@ class HistoricSensorWrapper(SensorWrapper):
           np.expand_dims(wrapped_sensor.get_upper_bound(), -1),
           (1, self._num_history))
     else:
-      lower_bound = np.tile(wrapped_sensor.get_lower_bound(), self._num_history)
-      upper_bound = np.tile(wrapped_sensor.get_upper_bound(), self._num_history)
+      lower_bound = np.tile(wrapped_sensor.get_lower_bound(),
+                            self._num_history)
+      upper_bound = np.tile(wrapped_sensor.get_upper_bound(),
+                            self._num_history)
     shape = lower_bound.shape
 
     self._history_buffer = None

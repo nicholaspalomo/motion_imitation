@@ -19,14 +19,20 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+import os
+import inspect
+currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
+parentdir = os.path.dirname(os.path.dirname(currentdir))
+os.sys.path.insert(0, parentdir)
+
 import copy
 import functools
 
 import numpy as np
 import tensorflow as tf
 
-from envs.utilities import controllable_env_randomizer_base
-from envs.utilities import minitaur_env_randomizer_config
+from motion_imitation.envs.utilities import controllable_env_randomizer_base
+from motion_imitation.envs.utilities import minitaur_env_randomizer_config
 
 SIMULATION_TIME_STEP = 0.001
 NUM_LEGS = 4
@@ -35,7 +41,6 @@ NUM_LEGS = 4
 class ControllableEnvRandomizerFromConfig(
     controllable_env_randomizer_base.ControllableEnvRandomizerBase):
   """A randomizer that change the minitaur_gym_env during every reset."""
-
   def __init__(self,
                config=None,
                verbose=True,
@@ -56,10 +61,9 @@ class ControllableEnvRandomizerFromConfig(
     self._param_bounds = param_bounds
     self._suspend_randomization = False
     self._verbose = verbose
+    self._rejection_param_range = {}
 
     self._np_random = np.random.RandomState()
-
-    return
 
   @property
   def suspend_randomization(self):
@@ -153,18 +157,18 @@ class ControllableEnvRandomizerFromConfig(
   def _build_randomization_function_dict(self, env):
     func_dict = {}
     robot = self._get_robot_from_env(env)
-    func_dict["mass"] = functools.partial(
-        self._randomize_masses, minitaur=robot)
+    func_dict["mass"] = functools.partial(self._randomize_masses,
+                                          minitaur=robot)
     func_dict["individual mass"] = functools.partial(
         self._randomize_individual_masses, minitaur=robot)
-    func_dict["base mass"] = functools.partial(
-        self._randomize_basemass, minitaur=robot)
-    func_dict["inertia"] = functools.partial(
-        self._randomize_inertia, minitaur=robot)
+    func_dict["base mass"] = functools.partial(self._randomize_basemass,
+                                               minitaur=robot)
+    func_dict["inertia"] = functools.partial(self._randomize_inertia,
+                                             minitaur=robot)
     func_dict["individual inertia"] = functools.partial(
         self._randomize_individual_inertia, minitaur=robot)
-    func_dict["latency"] = functools.partial(
-        self._randomize_latency, minitaur=robot)
+    func_dict["latency"] = functools.partial(self._randomize_latency,
+                                             minitaur=robot)
     func_dict["joint friction"] = functools.partial(
         self._randomize_joint_friction, minitaur=robot)
     func_dict["motor friction"] = functools.partial(
@@ -173,17 +177,17 @@ class ControllableEnvRandomizerFromConfig(
         self._randomize_contact_restitution, minitaur=robot)
     func_dict["lateral friction"] = functools.partial(
         self._randomize_contact_friction, minitaur=robot)
-    func_dict["battery"] = functools.partial(
-        self._randomize_battery_level, minitaur=robot)
+    func_dict["battery"] = functools.partial(self._randomize_battery_level,
+                                             minitaur=robot)
     func_dict["motor strength"] = functools.partial(
         self._randomize_motor_strength, minitaur=robot)
     func_dict["global motor strength"] = functools.partial(
         self._randomize_global_motor_strength, minitaur=robot)
     # Setting control step needs access to the environment.
-    func_dict["control step"] = functools.partial(
-        self._randomize_control_step, env=env)
-    func_dict["leg weaken"] = functools.partial(
-        self._randomize_leg_weakening, minitaur=robot)
+    func_dict["control step"] = functools.partial(self._randomize_control_step,
+                                                  env=env)
+    func_dict["leg weaken"] = functools.partial(self._randomize_leg_weakening,
+                                                minitaur=robot)
     func_dict["single leg weaken"] = functools.partial(
         self._randomize_single_leg_weakening, minitaur=robot)
     return func_dict
